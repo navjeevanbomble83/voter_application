@@ -1,4 +1,5 @@
 import os
+import redis as redislib
 from flask import Flask, render_template_string, request, redirect
 
 app = Flask(__name__)
@@ -6,6 +7,22 @@ app = Flask(__name__)
 TEAM_NAME  = os.environ.get("TEAM_NAME", "Blue Team")
 BG_COLOR   = os.environ.get("BG_HEX", "#1a237e")
 ACCENT     = os.environ.get("ACCENT_HEX", "#42a5f5")
+REDIS_HOST = os.environ.get("REDIS_HOST", "redis-service")
+REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
+REDIS_PASS = os.environ.get("REDIS_PASSWORD", None)
+VOTE_KEY   = os.environ.get("VOTE_KEY", "red_votes")
+
+# Connect to Redis (graceful degradation if unavailable)
+try:
+    r = redislib.Redis(host=REDIS_HOST, port=REDIS_PORT,
+                       password=REDIS_PASS, decode_responses=True,
+                       socket_connect_timeout=3)
+    r.ping()
+    REDIS_OK = True
+except Exception as e:
+    print(f"Redis connection failed: {e}")
+    r = None
+    REDIS_OK = False
 
 TEMPLATE = """<!DOCTYPE html>
 <html>
@@ -68,44 +85,40 @@ CloudVibe Internal Voting
 <p style="opacity:.6;margin-bottom:20px">votes</p>
 
 <form method="POST" action="/vote">
-<button class="btn" type="submit">
-CAST VOTE
-</button>
+<button class="btn" type="submit">CAST VOTE</button>
 </form>
-
-<div class="info">
-Pod: {{ pn }} | NS: {{ ns }}
-</div>
+<div class="status">Redis: {{ "✅ Connected" if redis_ok else "❌ Disconnected (in-memory)" }}</div>
+<div class="info">Pod: {{ pn }} | NS: {{ ns }}</div>
 
 </div>
 </body>
 </html>
 """
 
-votes = 0
-
-@app.route("/")
+app.route("/")
 def index():
-    global votes
-    return render_template_string(
-        TEMPLATE,
-        nm=TEAM_NAME,
-        bg=BG_COLOR,
-        ac=ACCENT,
-        vc=votes,
-        pn=os.environ.get("HOSTNAME", "?"),
-        ns=os.environ.get("POD_NAMESPACE", "?")
-    )
+    vc = 0
+    if REDIS_OK and r:
+        try:
+            vc = int(r.get(VOTE_KEY) or 0)
+        except:
+            pass
+    return render_template_string(TEMPLATE, nm=TEAM_NAME, bg=BG_COLOR,
+        ac=ACCENT, vc=vc, redis_ok=REDIS_OK,
+        pn=os.environ.get("HOSTNAME","?"),
+        ns=os.environ.get("POD_NAMESPACE","?"))
 
 @app.route("/vote", methods=["POST"])
 def vote():
-    global votes
-    votes += 1
+    if REDIS_OK and r:
+        try:
+            r.incr(VOTE_KEY)
+        except:
+            pass
     return redirect("/")
 
 @app.route("/healthz")
 def health():
-    return {"status": "ok"}, 200
-
+    return {"status": "ok", "redis": REDIS_OK}, 200
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
