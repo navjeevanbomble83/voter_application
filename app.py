@@ -95,7 +95,7 @@ CloudVibe Internal Voting
 </html>
 """
 
-app.route("/")
+@app.route("/")
 def index():
     vc = 0
     if REDIS_OK and r:
