@@ -9,14 +9,12 @@ BG_COLOR   = os.environ.get("BG_HEX", "#1a237e")
 ACCENT     = os.environ.get("ACCENT_HEX", "#42a5f5")
 REDIS_HOST = os.environ.get("REDIS_HOST", "redis-service")
 REDIS_PORT = int(os.environ.get("REDIS_PORT", "6379"))
-REDIS_PASS = os.environ.get("REDIS_PASSWORD", None)
+# REDIS_PASS = os.environ.get("REDIS_PASSWORD", None)
 VOTE_KEY   = os.environ.get("VOTE_KEY", "red_votes")
 
 # Connect to Redis (graceful degradation if unavailable)
 try:
-    r = redislib.Redis(host=REDIS_HOST, port=REDIS_PORT,
-                       password=REDIS_PASS, decode_responses=True,
-                       socket_connect_timeout=3)
+    r = redislib.Redis(host=REDIS_HOST, port=REDIS_PORT, socket_connect_timeout=3)
     r.ping()
     REDIS_OK = True
 except Exception as e:
