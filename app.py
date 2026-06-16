@@ -94,6 +94,15 @@ CloudVibe Internal Voting
 """
 
 @app.route("/")
+def welcome():
+    return """
+    <h1>Voting Application</h1>
+    <a href="/red">Red Team</a><br>
+    <a href="/blue">Blue Team</a>
+    """    
+    
+@app.route("/red")
+@app.route("/blue")
 def index():
     vc = 0
     if REDIS_OK and r:
@@ -106,7 +115,8 @@ def index():
         pn=os.environ.get("HOSTNAME","?"),
         ns=os.environ.get("POD_NAMESPACE","?"))
 
-@app.route("/vote", methods=["POST"])
+@app.route("/red/vote", methods=["POST"])
+@app.route("/blue/vote", methods=["POST"])
 def vote():
     if REDIS_OK and r:
         try:
