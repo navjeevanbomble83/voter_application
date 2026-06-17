@@ -115,15 +115,14 @@ def index():
         pn=os.environ.get("HOSTNAME","?"),
         ns=os.environ.get("POD_NAMESPACE","?"))
 
-@app.route("/red/vote", methods=["POST"])
-@app.route("/blue/vote", methods=["POST"])
+@app.route("/vote", methods=["POST"])
 def vote():
     if REDIS_OK and r:
         try:
             r.incr(VOTE_KEY)
         except:
             pass
-    return redirect("/")
+    return redirect(request.referrer or "/")
 
 @app.route("/healthz")
 def health():
