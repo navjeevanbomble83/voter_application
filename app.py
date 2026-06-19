@@ -82,7 +82,7 @@ CloudVibe Internal Voting
 
 <p style="opacity:.6;margin-bottom:20px">votes</p>
 
-<form method="POST" action="/vote">
+<form method="POST" action={{ rv_api }}>
 <button class="btn" type="submit">CAST VOTE</button>
 </form>
 <div class="status">Redis: {{ "✅ Connected" if redis_ok else "❌ Disconnected (in-memory)" }}</div>
@@ -105,17 +105,19 @@ def welcome():
 @app.route("/blue")
 def index():
     vc = 0
+    route_vote_api = f"/{TEAM_NAME.lower().split()[0]}/vote"
     if REDIS_OK and r:
         try:
             vc = int(r.get(VOTE_KEY) or 0)
         except:
             pass
     return render_template_string(TEMPLATE, nm=TEAM_NAME, bg=BG_COLOR,
-        ac=ACCENT, vc=vc, redis_ok=REDIS_OK,
+        ac=ACCENT, vc=vc, redis_ok=REDIS_OK, rv_api = route_vote_api,
         pn=os.environ.get("HOSTNAME","?"),
         ns=os.environ.get("POD_NAMESPACE","?"))
 
-@app.route("/vote", methods=["POST"])
+@app.route("/red/vote", methods=["POST"])
+@app.route("/blue/vote", methods=["POST"])
 def vote():
     if REDIS_OK and r:
         try:
