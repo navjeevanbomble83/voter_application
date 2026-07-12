@@ -12,7 +12,7 @@ env:
   dockerhub_username: ${{ secrets.DOCKER_USERNAME }}
   dockerhub_password: ${{ secrets.DOCKER_PASSWORD }}
 
-job:
+jobs:
   build:
     runs-on: ubuntu-latest
     steps:
