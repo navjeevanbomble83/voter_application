@@ -7,7 +7,6 @@ on:
     paths:
       - 'Dockerfile'
       - 'app.py'
-      - 'github/workflows/docker_image_creation_job.yaml'
 
 env:
   dockerhub_username: ${{ secrets.DOCKER_USERNAME }}
