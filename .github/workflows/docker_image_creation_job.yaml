@@ -57,7 +57,7 @@ jobs:
       
       - name: Commit and Push Changes
         run: |
-          cd voter-app-deploy
+          cd helm-repo/voter-app-deploy
           git config user.name "navz08"
           git config user.email "navjeevanbomble83@gmail.com"
 
