@@ -42,7 +42,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          repository: navz08/FirstDeploymentRepo
+          repository: navjeevanbomble83/FirstDeploymentRepo
           token: ${{ secrets.HELM_REPO_TOKEN }}
           path: voter-app-deploy
 
